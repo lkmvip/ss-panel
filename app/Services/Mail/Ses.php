@@ -9,19 +9,26 @@ class Ses extends Base
 {
     protected $client;
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __construct()
     {
         $this->client = Factory::createSes();
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getSender()
     {
-        return Config::get('aws_ses_sender');
     }
 
-    public function send($to, $subject, $text)
+    /**
+     * @codeCoverageIgnore
+     */
+    public function send($to, $subject, $text,$file)
     {
-
         $this->client->sendEmail([
             'Destination' => [ // REQUIRED
                 'ToAddresses' => [$to],
@@ -36,7 +43,7 @@ class Ses extends Base
                     ],
                 ],
                 'Subject' => [ // REQUIRED
-                    'Data' => $subject, // REQUIRED
+                    'Data' => $subject// REQUIRED
                 ],
             ],
             'Source' => $this->getSender(), // REQUIRED

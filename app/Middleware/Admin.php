@@ -2,24 +2,21 @@
 
 namespace App\Middleware;
 
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use App\Services\Auth as AuthService;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
-class Admin{
+class Admin extends Api
+{
+    use Helper;
 
-    public function __invoke(ServerRequestInterface $request,ResponseInterface $response, $next)
+    public function __invoke(Request $request, Response $response, $next)
     {
-        //$response->getBody()->write('BEFORE');
-        $user = AuthService::getUser();
-        if(!$user->isLogin){
-            $newResponse = $response->withStatus(302)->withHeader('Location', '/auth/login');
-            return $newResponse;
+        $user = $this->getUserFromReq($request);
+        if (!$user || !$user->isLogin) {
+            return $this->denied($response);
         }
-
-        if(!$user->isAdmin()){
-            $newResponse = $response->withStatus(302)->withHeader('Location', '/user');
-            return $newResponse;
+        if (!$user->isAdmin()) {
+            return $this->denied($response);
         }
         $response = $next($request, $response);
         return $response;

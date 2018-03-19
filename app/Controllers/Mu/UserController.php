@@ -3,23 +3,26 @@
 namespace App\Controllers\Mu;
 
 use App\Controllers\BaseController;
-use App\Models\Node, App\Models\TrafficLog, App\Models\User;
-use App\Storage\Dynamodb\TrafficLog as DynamoTrafficLog;
+use App\Models\Node;
+use App\Models\TrafficLog;
+use App\Models\User;
 use App\Services\Config;
+use App\Services\Logger;
+use App\Storage\Dynamodb\TrafficLog as DynamoTrafficLog;
 use App\Utils\Tools;
-use Aws\DynamoDb\DynamoDbClient;
 
 class UserController extends BaseController
 {
     // User List
     public function index($request, $response, $args)
     {
-        $user = User::all();
+        $users = User::all();
         $res = [
-            "ret" => 1,
-            "msg" => "ok",
-            "data" => $user
+            'ret' => 1,
+            'msg' => 'ok',
+            'data' => $users,
         ];
+
         return $this->echoJson($response, $res);
     }
 
@@ -39,9 +42,10 @@ class UserController extends BaseController
         $user->d = $user->d + ($d * $rate);
         if (!$user->save()) {
             $res = [
-                "ret" => 0,
-                "msg" => "update failed",
+                'ret' => 0,
+                'msg' => 'update failed',
             ];
+
             return $this->echoJson($response, $res);
         }
         // log
@@ -56,20 +60,21 @@ class UserController extends BaseController
         $traffic->log_time = time();
         $traffic->save();
 
-        $msg = "ok";
+        $res = [
+            'ret' => 1,
+            'msg' => 'ok',
+        ];
         if (Config::get('log_traffic_dynamodb')) {
-            $client = new DynamoTrafficLog();
-            try{
-                $client->store($u, $d, $nodeId, $id, $totalTraffic, $rate);
-            }catch(\Exception $e){
-                $msg = $e->getMessage();
+            try {
+                $client = new DynamoTrafficLog();
+                $id = $client->store($u, $d, $nodeId, $id, $totalTraffic, $rate);
+                $res['id'] = $id;
+            } catch (\Exception $e) {
+                $res['msg'] = $e->getMessage();
+                Logger::error($e->getMessage());
             }
         }
 
-        $res = [
-            "ret" => 1,
-            "msg" => $msg,
-        ];
         return $this->echoJson($response, $res);
     }
 }

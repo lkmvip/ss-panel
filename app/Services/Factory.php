@@ -1,41 +1,39 @@
 <?php
 
+
 namespace App\Services;
 
-use App\Services\Auth\Cookie,App\Services\Auth\Redis,App\Services\Auth\JwtToken;
-use App\Services\Token\DB,App\Services\Token\Dynamodb;
+use Psr\SimpleCache\CacheInterface;
+use Psr\Log\LoggerInterface;
+use App\Contracts\TokenStorageInterface;
 
 class Factory
 {
-    public static function createAuth(){
-        $method = Config::get('authDriver');
-        switch($method){
-            case 'cookie':
-                return new Cookie();
-            case 'redis':
-                return new Redis();
-            case 'jwt':
-                return new JwtToken();
-        }
-        return new Redis();
+    /**
+     * @return CacheInterface
+     */
+    public static function getCache()
+    {
+        return app()->make('cache');
     }
 
-    public static function createCache(){
-
+    /**
+     * @return LoggerInterface
+     */
+    public static function getLogger()
+    {
+        return app()->make('log');
     }
 
-    public static function createMail(){
 
+
+    /**
+     * @return TokenStorageInterface
+     */
+    public static function getTokenStorage()
+    {
+        return app()->make(TokenStorageInterface::class);
     }
 
-    public static function createTokenStorage(){
-        switch(Config::get('tokenDriver')){
-            case 'db':
-                return new DB();
-            case 'dynamodb':
-                return new Dynamodb();
-            default:
-                return new DB();
-        }
-    }
+
 }

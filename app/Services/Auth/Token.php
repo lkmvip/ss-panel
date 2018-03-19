@@ -3,29 +3,43 @@
 
 namespace App\Services\Auth;
 
+use Psr\SimpleCache\CacheInterface;
+use App\Contracts\TokenInterface;
 use App\Services\Factory;
+use App\Models\User;
 
-class Token extends Base
+class Token implements TokenInterface
 {
-    protected $storage;
 
-    public function __construct()
+    /**
+     * @var CacheInterface
+     */
+    private $cache;
+
+    private $accessToken;
+
+    public function __construct($accessToken)
     {
-        $this->storage = Factory::createTokenStorage();
+        $this->accessToken = $accessToken;
+        $this->cache = Factory::getCache();
     }
 
-    public function  login($uid,$time)
+    /**
+     * @return string
+     */
+    public function getAccessToken()
     {
-        // TODO: Implement getUser() method.
+        return $this->accessToken;
     }
 
-    public function logout()
+    /**
+     * @return User
+     */
+    public function getUser()
     {
-        // TODO: Implement logout() method.
-    }
-
-    public function getUser(){
-        $token = Cookie::get('token');
-        
+        $uid = $this->cache->get($this->accessToken);
+        $user =  User::find($uid);
+        $user->isLogin  = true;
+        return $user;
     }
 }

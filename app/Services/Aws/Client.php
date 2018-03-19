@@ -6,13 +6,17 @@ use Aws\Sdk;
 
 class Client
 {
-    public function getClient(){
+    /**
+     * @codeCoverageIgnore
+     */
+    public function getClient()
+    {
         $sdk = new Sdk([
-            'region'   => 'us-west-2',
-            'version'  => 'latest',
+            'region' => 'us-west-2',
+            'version' => 'latest',
             'DynamoDb' => [
-                'region' => 'eu-central-1'
-            ]
+                'region' => 'eu-central-1',
+            ],
         ]);
     }
 }
